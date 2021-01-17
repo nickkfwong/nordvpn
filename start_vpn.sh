@@ -1,4 +1,5 @@
 #!/bin/bash
+
 [[ -n ${DEBUG} ]] && set -x
 [[ -n ${COUNTRY} && -z ${CONNECT} ]] && CONNECT=${COUNTRY}
 [[ "${GROUPID:-""}" =~ ^[0-9]+$ ]] && groupmod -g "$GROUPID" -o vpn
@@ -99,6 +100,7 @@ white_list() { # Allow unsecured traffic for an specific domain
 
 create_tun_device() {
 	mkdir -p /dev/net
+	# charater device (?)
 	[[ -c /dev/net/tun ]] || mknod -m 0666 /dev/net/tun c 10 200
 }
 
@@ -118,11 +120,15 @@ kill_switch
 
 pkill nordvpnd
 rm -f /run/nordvpnd.sock
-sg vpn -c nordvpnd &
 
+sg vpn -c nordvpnd &
+# wait until the deamon is ready
 while [ ! -S /run/nordvpnd.sock ]; do
-	sleep 0.25
+ 	sleep 0.25
 done
+
+ps
+nordvpn status
 
 nordvpn login -u "${USER}" -p "${PASS}"
 
